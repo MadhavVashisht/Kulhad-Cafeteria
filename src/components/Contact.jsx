@@ -1,5 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import emailjs from "@emailjs/browser";
+
+// Environment Variables (Ensure these are set in your .env file)
+const SERVICE_ID = import.meta.env.VITE_SERVICE_ID;
+const TEMPLATE_ID = import.meta.env.VITE_TEMPLATE_ID;
+const PUBLIC_KEY = import.meta.env.VITE_PUBLIC_KEY;
 
 // Animation Variants (Consistent with About section)
 const fadeInUp = {
@@ -29,18 +35,45 @@ const Contact = () => {
     message: "",
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    alert("Thank you for your interest! We will contact you soon.");
-    setFormData({ name: "", email: "", phone: "", message: "" });
-  };
+  const [status, setStatus] = useState(""); // idle, sending, success, error
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Basic validation is handled by the 'required' attributes in the JSX
+    setStatus("sending");
+
+    try {
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        {
+          ...formData,
+          // Mapping fields to standard EmailJS template variables
+          from_name: formData.name,
+          reply_to: formData.email,
+          phone_number: formData.phone,
+          message: formData.message,
+        },
+        PUBLIC_KEY
+      );
+
+      setStatus("success");
+      setFormData({ name: "", email: "", phone: "", message: "" });
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setStatus(""), 5000);
+    } catch (err) {
+      console.error("EmailJS Error: ", err);
+      setStatus("error");
+    }
   };
 
   // Helper function to determine content rendering
@@ -157,7 +190,6 @@ const Contact = () => {
   return (
     <section
       id="contact"
-      // CHANGED: bg-kulhad-dark -> bg-transparent to allow Particles to show
       className="section-padding bg-transparent relative overflow-hidden"
     >
       {/* Background decoration - Optional blur behind this section specifically */}
@@ -268,7 +300,7 @@ const Contact = () => {
             whileInView="visible"
             viewport={{ once: false, amount: 0.3 }}
             variants={fadeInUp}
-            transition={{ delay: 0.2 }} // Slight delay to come in after the text
+            transition={{ delay: 0.2 }}
           >
             {/* Form Glow Effect */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-kulhad-clay/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none"></div>
@@ -288,7 +320,8 @@ const Contact = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300"
+                  disabled={status === "sending"}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300 disabled:opacity-50"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -308,7 +341,8 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300"
+                    disabled={status === "sending"}
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300 disabled:opacity-50"
                     placeholder="name@example.com"
                   />
                 </div>
@@ -327,7 +361,8 @@ const Contact = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300"
+                    disabled={status === "sending"}
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300 disabled:opacity-50"
                     placeholder="+91 98765 43210"
                   />
                 </div>
@@ -346,21 +381,45 @@ const Contact = () => {
                   value={formData.message}
                   onChange={handleChange}
                   rows="4"
-                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300 resize-none"
+                  required
+                  disabled={status === "sending"}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/20 focus:outline-none focus:border-kulhad-clay/50 focus:ring-1 focus:ring-kulhad-clay/50 transition-all duration-300 resize-none disabled:opacity-50"
                   placeholder="Tell us about your interest in the franchise..."
                 ></textarea>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 space-y-3">
                 <button
                   type="submit"
-                  className="w-full bg-kulhad-clay text-white py-4 rounded-xl hover:bg-[#c05f30] hover:shadow-lg hover:shadow-kulhad-clay/20 transition-all duration-300 font-medium text-lg tracking-wide"
+                  disabled={status === "sending"}
+                  className="w-full bg-kulhad-clay text-white py-4 rounded-xl hover:bg-[#c05f30] hover:shadow-lg hover:shadow-kulhad-clay/20 transition-all duration-300 font-medium text-lg tracking-wide disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Submit Franchise Inquiry
+                  {status === "sending"
+                    ? "Sending Request..."
+                    : "Submit Franchise Inquiry"}
                 </button>
+
+                {/* Status Message Display */}
+                {status && (
+                  <p
+                    className={`text-center text-sm font-medium ${
+                      status === "success"
+                        ? "text-green-400"
+                        : status === "error"
+                        ? "text-red-400"
+                        : "text-kulhad-light/60"
+                    }`}
+                  >
+                    {status === "success"
+                      ? "Message Sent Successfully! We will contact you soon. ✅"
+                      : status === "error"
+                      ? "Something went wrong. Please try again. ❌"
+                      : ""}
+                  </p>
+                )}
               </div>
 
-              <p className="text-xs text-kulhad-light/40 text-center pt-2">
+              <p className="text-xs text-kulhad-light/40 text-center">
                 By submitting this form, you agree to our privacy policy. We'll
                 contact you within 24 hours.
               </p>
