@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* Updated Colors based on Logo */
+  --color-kulhad-dark: #0f0a0a;   /* Deep Coffee/Black (Matches logo background) */
+  --color-kulhad-clay: #d67040;   /* Terracotta Orange (Matches the Cup) */
+  --color-kulhad-light: #ffffff;  /* Pure White (Matches logo text) */
+  --color-kulhad-gray: #a3a3a3;   /* Muted gray for secondary text */
+
+  /* Fonts */
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    /* Using the new darker background and crisper white text */
+    @apply bg-kulhad-dark text-kulhad-light font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-serif font-semibold;
+  }
+
+  /* Optional: Update selection color to match brand */
+  ::selection {
+    @apply bg-kulhad-clay text-white;
+  }
+}
+
+/* SUGGESTION: 
+   Use the 'kulhad-clay' class for your primary buttons ("Explore Franchise") 
+   to make them pop against the dark background.
+*/
+
+@utility section-padding {
+  @apply px-6 md:px-12 lg:px-24 py-16 md:py-24;
+}
+
+@utility card-hover {
+  @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl;
+}
+
+/* Primary Button Utility */
+@utility btn-primary {
+  @apply px-8 py-3 bg-kulhad-clay text-white rounded-full font-medium 
+         transition-colors duration-300 hover:bg-[#c05f30];
+}
+
+/* Secondary Button Utility (Outlined) */
+@utility btn-secondary {
+  @apply px-8 py-3 border border-kulhad-light text-kulhad-light rounded-full font-medium 
+         transition-colors duration-300 hover:bg-kulhad-light hover:text-kulhad-dark;
+}
